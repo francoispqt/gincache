@@ -26,5 +26,9 @@
   version = "1.2.0"
 
 [[constraint]]
+  name = "github.com/go-siris/siris"
+  version = "7.4.0"
+
+[[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.0"
