@@ -20,6 +20,12 @@
   version = "v1.2"
 
 [[projects]]
+  name = "github.com/go-siris/siris"
+  packages = ["core/errors"]
+  revision = "d6bc3df4b216199bec985043ca6c3e5c00232fd5"
+  version = "v7.4.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/golang/protobuf"
   packages = ["proto"]
@@ -36,6 +42,12 @@
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
 
 [[projects]]
   branch = "master"
@@ -76,6 +88,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "75f6b6ab1099bb794ee093d5ea69431e9cd7ac2689293daf0a45a9bbbf7a61c4"
+  inputs-digest = "5ecdd0c16413a7db735854b3a45032009b4b7de8a069c3eb76cf33e49f0c2320"
   solver-name = "gps-cdcl"
   solver-version = 1
