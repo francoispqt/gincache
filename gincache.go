@@ -43,12 +43,10 @@ type Options struct {
 
 type bodyWriter struct {
 	gin.ResponseWriter
-	body *bytes.Buffer
-}
-
-func (w bodyWriter) Write(b []byte) (int, error) {
-	w.body.Write(b)
-	return w.ResponseWriter.Write(b)
+	body         *bytes.Buffer
+	CacheOptions *Options
+	context      *gin.Context
+	CacheKey     string
 }
 
 func isErrorResponse(c *gin.Context, options *Options) bool {
@@ -56,7 +54,29 @@ func isErrorResponse(c *gin.Context, options *Options) bool {
 	return statusCode > 399
 }
 
-// NewMiddleware is the factory function returning a gin.HandlerFunc as a middleware
+func (w bodyWriter) Write(b []byte) (int, error) {
+	w.body.Write(b)
+	c := w.context
+	options := w.CacheOptions
+	// check if response is not error code
+	// if context is not aborted and if DisableSet is not done
+	// and cache
+	if !isErrorResponse(c, options) && !options.DisableSet && !c.IsAborted() {
+		// check if we know the content type
+		if options.ResponseContentType == "" {
+			options.ResponseContentType = w.ResponseWriter.Header().Get("Content-Type")
+		}
+
+		err := options.Adapter.Set(w.CacheKey, w.body.String(), options.TTL)
+		if err != nil {
+			c.Set("CacheSetError", err)
+			c.Error(err)
+		}
+	}
+	return w.ResponseWriter.Write(b)
+}
+
+// NewMiddleware is the factory function returning a gin.HandlerFunc closure as a middleware
 func NewMiddleware(options *Options) gin.HandlerFunc {
 	// check options
 	// if no adapter assign default adapter (memory)
@@ -122,36 +142,14 @@ func NewMiddleware(options *Options) gin.HandlerFunc {
 		}
 
 		// overwrite the writer to intercept response content
-		bWriter := &bodyWriter{body: bytes.NewBufferString(""), ResponseWriter: c.Writer}
+		bWriter := &bodyWriter{
+			body:           bytes.NewBufferString(""),
+			context:        c,
+			ResponseWriter: c.Writer,
+			CacheOptions:   options,
+			CacheKey:       key,
+		}
 		c.Writer = bWriter
 		c.Next()
-
-		// check if context is done
-		// if yes return
-		select {
-		case <-c.Done():
-			return
-		default:
-			if c.IsAborted() {
-				return
-			}
-			// happens after handler chain completed
-			// check if response is error code
-			// and cache
-			if !isErrorResponse(c, options) && !options.DisableSet {
-				// check if we know the content type
-				if options.ResponseContentType == "" {
-					options.ResponseContentType = bWriter.ResponseWriter.Header().Get("Content-Type")
-				}
-
-				err := options.Adapter.Set(key, bWriter.body.String(), options.TTL)
-				if err != nil {
-					c.Set("CacheSetError", err)
-					return
-				}
-			}
-			return
-		}
-
 	}
 }

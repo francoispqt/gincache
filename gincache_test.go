@@ -274,6 +274,9 @@ func TestGinCacheAbortContext(t *testing.T) {
 		NewMiddleware(opts),
 		func(c *gin.Context) {
 			c.Abort()
+			c.JSON(200, map[string]string{
+				"foo": "bar",
+			})
 			return
 		},
 	)
