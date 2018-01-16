@@ -16,7 +16,7 @@ Then use it
 r := gin.Default()
 
 // creating a global middleware
-r.Use(gincache.NewMiddleware(&Options{
+r.Use(gincache.NewMiddleware(&gincache.Options{
     TTL: 3600,
     KeyFunc: func(c *gin.Context) (string, error){
         return "CACHEKEY", nil
@@ -26,7 +26,7 @@ r.Use(gincache.NewMiddleware(&Options{
 // creating a route based middleware
 r.GET(
     "/",
-    gincache.NewMiddleware(&Options{
+    gincache.NewMiddleware(&gincache.Options{
         TTL: 3600,
         Key: "GET/",
     }),
